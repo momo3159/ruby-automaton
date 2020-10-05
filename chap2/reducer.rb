@@ -74,6 +74,54 @@ class Multiply < Struct.new(:left, :right)
     end
 end
 
+class Div < Struct.new(:left, :right)
+    def to_s
+        "#{left} / #{right}"
+    end
+
+    def inspect
+        "<<#{self}>>"
+    end
+
+    def reducible?
+        true
+    end
+
+    def reduce(environment) 
+        if left.reducible?
+            Div.new(left.reduce(environment), right)
+        elsif right.reducible?
+            Div.new(left, right.reduce(environment))
+        else
+            Number.new(left.value / right.value)
+        end
+    end
+end
+
+class Mod < Struct.new(:left, :right)
+    def to_s
+        "#{left} % #{right}"
+    end
+
+    def inspect
+        "<<#{self}>>"
+    end
+
+    def reducible?
+        true
+    end
+
+    def reduce(environment) 
+        if left.reducible?
+            Mod.new(left.reduce(environment), right)
+        elsif right.reducible?
+            Mod.new(left, right.reduce(environment))
+        else
+            Number.new(left.value % right.value)
+        end
+    end
+end
+
 class LessThan < Struct.new(:left, :right)
     def to_s
         "#{left} < #{right}"
@@ -94,6 +142,30 @@ class LessThan < Struct.new(:left, :right)
             LessThan.new(left, right.reduce(environment))
         else
             Boolean.new(left.value < right.value)
+        end
+    end
+end
+
+class GreaterThan < Struct.new(:left, :right)
+    def to_s
+        "#{left} > #{right}"
+    end
+
+    def inspect
+        "<<#{self}>>"
+    end
+
+    def reducible?
+        true
+    end
+
+    def reduce(environment)
+        if left.reducible?
+            GreaterThan.new(left.reduce(environment), right)
+        elsif right.reducible?
+            GreaterThan.new(left, right.reduce(environment))
+        else
+            Boolean.new(left.value > right.value)
         end
     end
 end
@@ -132,7 +204,7 @@ end
 
 m = Machine.new(
     # x + y < 3 という式に対応する抽象構文木
-    LessThan.new(
+    Mod.new(
         Multiply.new(Variable.new(:x), Variable.new(:y)),
         Number.new(3)
     ),
