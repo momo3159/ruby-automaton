@@ -170,6 +170,72 @@ class GreaterThan < Struct.new(:left, :right)
     end
 end
 
+class And < Struct.new(:left, :right)
+    def to_s
+        "#{left} && #{right}"
+    end
+
+    def inspect
+        "<<#{self}>>"
+    end
+
+    def reducible?
+        true
+    end
+
+    def reduce(environment)
+        if left.reducible?
+            And.new(left.reduce(environment), right)
+        elsif right.reducible?
+            And.new(left, right.reduce(environment))
+        else
+            Boolean.new(left.value && right.value)
+        end
+    end
+end
+
+class Or < Struct.new(:left, :right)
+    def to_s
+        "#{left} || #{right}"
+    end
+
+    def inspect
+        "<<#{self}>>"
+    end
+
+    def reducible?
+        true
+    end
+
+    def reduce(environment)
+        if left.reducible?
+            Or.new(left.reduce(environment), right)
+        elsif right.reducible?
+            Or.new(left, right.reduce(environment))
+        else
+            Boolean.new(left.value || right.value)
+        end
+    end
+end
+
+class Not < Struct.new(:right)
+    def to_s
+        "!#{right}"
+    end
+
+    def inspect
+        "<<#{self}>>"
+    end
+
+    def reducible?
+        true
+    end
+
+    def reduce(environment)
+        Boolean.new(!(right.value))
+    end
+end
+
 class Variable < Struct.new(:name)
     def to_s
         name.to_s
@@ -204,11 +270,8 @@ end
 
 m = Machine.new(
     # x + y < 3 という式に対応する抽象構文木
-    Mod.new(
-        Multiply.new(Variable.new(:x), Variable.new(:y)),
-        Number.new(3)
-    ),
-    {x: Number.new(3), y: Number.new(4)}
+    Not.new(Boolean.new(false)),
+    {}
 )
 
 m.run
