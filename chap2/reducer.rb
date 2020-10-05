@@ -76,13 +76,13 @@ end
 
 class LessThan < Struct.new(:left, :right)
     def to_s
-        "#{left} * #{right}"
+        "#{left} < #{right}"
     end
 
     def inspect
         "<<#{self}>>"
     end
-    
+
     def reducible?
         true
     end
@@ -96,6 +96,7 @@ class LessThan < Struct.new(:left, :right)
             Boolean.new(left.value < right.value)
         end
     end
+end
 
 class Variable < Struct.new(:name)
     def to_s
@@ -130,8 +131,8 @@ class Machine < Struct.new(:expression, :environment)
 end
 
 m = Machine.new(
-    # (x * y) + 3 という式に対応する抽象構文木
-    Add.new(
+    # x + y < 3 という式に対応する抽象構文木
+    LessThan.new(
         Multiply.new(Variable.new(:x), Variable.new(:y)),
         Number.new(3)
     ),
