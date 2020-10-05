@@ -29,7 +29,7 @@ class Add < Struct.new(:left, :right)
         if left.reducible?
             Add.new(left.reduce(environment), right)
         elsif right.reducible?
-            Add.new(left.value, right.reduce(environment))
+            Add.new(left, right.reduce(environment))
         else
             Number.new(left.value + right.value)
         end
@@ -53,7 +53,7 @@ class Multiply < Struct.new(:left, :right)
         if left.reducible?
             Add.new(left.reduce(environment), right)
         elsif right.reducible?
-            Add.new(left.value, right.reduce(environment))
+            Add.new(left, right.reduce(environment))
         else
             Number.new(left.value * right.value)
         end
@@ -78,9 +78,9 @@ class Variable < Struct.new(:name)
     end
 end
 
-class Machine < Struct.new(:expression)
+class Machine < Struct.new(:expression, :environment)
     def step
-        self.expression = expression.reduce
+        self.expression = expression.reduce(environment)
     end
 
     def run
@@ -93,11 +93,12 @@ class Machine < Struct.new(:expression)
 end
 
 m = Machine.new(
-    # (4 * 20) + 3 という式に対応する抽象構文木
+    # (x * y) + 3 という式に対応する抽象構文木
     Add.new(
-        Multiply.new(Number.new(4), Number.new(20)),
+        Multiply.new(Variable.new(:x), Variable.new(:y)),
         Number.new(3)
-    )    
+    ),
+    {x: Number.new(3), y: Number.new(4)}
 )
 
 m.run
