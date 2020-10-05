@@ -61,16 +61,6 @@ class Multiply < Struct.new(:left, :right)
     end
 end
 
-def reducible?(expression)
-    case expression
-    when Number
-        false
-    when Add, Multiply
-        true
-    end
-end
-
-
 class Machine < Struct.new(:expression)
     def step
         self.expression = expression.reduce
